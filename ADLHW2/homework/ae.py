@@ -117,9 +117,9 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
             super().__init__()
             self.patchify = PatchifyLinear(patch_size, latent_dim)
             self.mix = torch.nn.Sequential(
-                torch.nn.Conv2d(latent_dim,latent_dim, 3, 1),
+                torch.nn.Conv2d(latent_dim, latent_dim, 3, 1),
                 torch.nn.ReLU(),
-                torch.nn.Conv2d(latent_dim, bottleneck, 1),
+                torch.nn.Conv2d(latent_dim, bottleneck, 1, 1),
                 torch.nn.ReLU()
             )
             # raise NotImplementedError()
@@ -137,17 +137,17 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
             self.mix = torch.nn.Sequential(
                 torch.nn.Conv2d(bottleneck, bottleneck, 3, 1),
                 torch.nn.ReLU(),
-                torch.nn.Conv2d(bottleneck, latent_dim, 1),
+                torch.nn.Conv2d(bottleneck, latent_dim, 1, 1),
                 torch.nn.ReLU()
             )
-            self.unpachify = UnpatchifyLinear(patch_size, latent_dim)
+            self.unpatchify = UnpatchifyLinear(patch_size, latent_dim)
             # raise NotImplementedError()
 
         def forward(self, x: torch.Tensor) -> torch.Tensor:
             z = hwc_to_chw(x)
             z = self.mix(x)
             z = chw_to_hwc(x)
-            return self.unpachify(x)
+            return self.unpatchify(x)
             # raise NotImplementedError()
 
     def __init__(self, patch_size: int = 25, latent_dim: int = 128, bottleneck: int = 128):
@@ -164,8 +164,8 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
         """
         z = self.encode(x)
         x_hat = self.decode(z)
-        aux: dict[str, torch.Tensor] = {}
-        return x_hat, aux
+
+        return x_hat, {}
         # raise NotImplementedError()
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
@@ -175,3 +175,4 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
     def decode(self, x: torch.Tensor) -> torch.Tensor:
         return self.decoder(x)
         # raise NotImplementedError()
+
