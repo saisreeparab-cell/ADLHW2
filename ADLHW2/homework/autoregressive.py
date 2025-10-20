@@ -55,6 +55,9 @@ class AutoregressiveModel(torch.nn.Module, Autoregressive):
     """
 
     def __init__(self, d_latent: int = 128, n_tokens: int = 2**10):
+        """
+        Init AutoregressiveModel class
+        """
         super().__init__()
         self.n_tokens = n_tokens
         self.d_latent = d_latent
@@ -86,7 +89,9 @@ class AutoregressiveModel(torch.nn.Module, Autoregressive):
             self.pos_emb = torch.nn.Embedding(seq_len, self.d_latent).to(device)
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
-
+        """
+            Return the forward method based on parameters. 
+        """
         b, h, w = x.shape
         l = h * w
         device = x.device
@@ -107,6 +112,9 @@ class AutoregressiveModel(torch.nn.Module, Autoregressive):
         # raise NotImplementedError()
 
     def generate(self, B: int = 1, h: int = 30, w: int = 20, device=None) -> torch.Tensor:  # noqa
+        """
+            Return the generate method based on parameters. 
+        """
 
         device = device or next(self.parameters()).device
         l = h * w
