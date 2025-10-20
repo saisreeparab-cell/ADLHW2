@@ -114,6 +114,9 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
         """
 
         def __init__(self, patch_size: int, latent_dim: int, bottleneck: int):
+            """
+            init patch encoder class. 
+            """
             super().__init__()
             self.patchify = PatchifyLinear(patch_size, latent_dim)
             self.mix = torch.nn.Sequential(
@@ -125,6 +128,9 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
             # raise NotImplementedError()
 
         def forward(self, x: torch.Tensor) -> torch.Tensor:
+            """
+            Return the forward torch tensor. 
+            """
             z = self.patchify(x)
             z = hwc_to_chw(z)
             z = self.mix(z)
@@ -133,6 +139,9 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
 
     class PatchDecoder(torch.nn.Module):
         def __init__(self, patch_size: int, latent_dim: int, bottleneck: int):
+            """
+            init patch decoder class. 
+            """
             super().__init__()
             self.mix = torch.nn.Sequential(
                 torch.nn.Conv2d(bottleneck, bottleneck, 3, 1, 1),
@@ -144,6 +153,9 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
             # raise NotImplementedError()
 
         def forward(self, x: torch.Tensor) -> torch.Tensor:
+            """
+            Return the forward torch tensor. 
+            """
             z = hwc_to_chw(x)
             z = self.mix(z)
             z = chw_to_hwc(z)
@@ -169,9 +181,15 @@ class PatchAutoEncoder(torch.nn.Module, PatchAutoEncoderBase):
         # raise NotImplementedError()
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Return the encode torch tensor. 
+        """
         return self.encoder(x)
         # raise NotImplementedError()
 
     def decode(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Return the decode torch tensor. 
+        """
         return self.decoder(x)
         # raise NotImplementedError()
