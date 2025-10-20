@@ -45,6 +45,9 @@ class Tokenizer(abc.ABC):
 
 class BSQ(torch.nn.Module):
     def __init__(self, codebook_bits: int, embedding_dim: int):
+        """
+        Init the BSQ class
+        """
         super().__init__()
         self._codebook_bits = int(codebook_bits)
         self._embeddings_dim = int(embedding_dim)
@@ -113,6 +116,9 @@ class BSQPatchAutoEncoder(PatchAutoEncoder, Tokenizer):
     """
 
     def __init__(self, patch_size: int = 5, latent_dim: int = 128, codebook_bits: int = 10):
+        """
+        Init BSQPatchAutoEncoder class
+        """
         super().__init__(patch_size=patch_size, latent_dim=latent_dim)
 
         self._codebook_bits = int(codebook_bits)
@@ -122,7 +128,9 @@ class BSQPatchAutoEncoder(PatchAutoEncoder, Tokenizer):
         # raise NotImplementedError()
 
     def encode_index(self, x: torch.Tensor) -> torch.Tensor:
-
+        """
+        Run encode the input tensor x into a set of integer tokens
+        """
         z = super().encode(x)
         b = self.bsq.encode(z)
         idx = self.bsq._code_to_index(b)
@@ -131,7 +139,9 @@ class BSQPatchAutoEncoder(PatchAutoEncoder, Tokenizer):
         # raise NotImplementedError()
 
     def decode_index(self, x: torch.Tensor) -> torch.Tensor:
-
+        """
+        Run decode the input tensor x into a set of integer tokens
+        """
         b = self.bsq._index_to_code(x)
         z = self.bsq.decode(b)
         x_hat = super().decode(z)
@@ -141,13 +151,17 @@ class BSQPatchAutoEncoder(PatchAutoEncoder, Tokenizer):
         # raise NotImplementedError()
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
-
+        """
+        Run encode the input tensor x 
+        """
         return super().encode(x)
 
         # raise NotImplementedError()
 
     def decode(self, x: torch.Tensor) -> torch.Tensor:
-
+        """
+        Run encode the input tensor x 
+        """
         return super().decode(x)
 
         # raise NotImplementedError()
