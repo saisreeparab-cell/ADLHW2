@@ -3,6 +3,7 @@ import abc
 import torch
 
 
+
 def load() -> torch.nn.Module:
     from pathlib import Path
 
@@ -76,6 +77,14 @@ class AutoregressiveModel(torch.nn.Module, Autoregressive):
         self.head = torch.nn.Linear(d_latent, n_tokens)
         # raise NotImplementedError()
 
+    @staticmethod
+    def _causal_mask(seq_len: int, device):
+        return torch.triu(torch.ones(seq_len, seq_len, device = device, dtype = torch.bool), diagonal = 1)
+
+    def _ensure_pos_emb(self,seq_len: int, device):
+        if self.pos_emb is None or self.pos_emb.num_embeddingd < seq_len:
+            self.pos_emb = torch.nn.Embedding(seq_len, self.d_latent).to(device)
+
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
 
         b, h, w = x.shape
@@ -119,95 +128,6 @@ class AutoregressiveModel(torch.nn.Module, Autoregressive):
             mask = self._causal_mask(t + 1, device)
             hidden = self.encoder(x_in, mask = mask)
             logits = self.head(hidden[:, -1, :])
-            next_tok = torch.argmax(logits, dim = 1).squeeze(1)
-            seq = torch.cat([seq, next_tok], dim =1)
-
-        return seq.view(B, h, w)
-
-
-        # raise NotImplementedError()
-
-    def generate(self, B: int = 1, h: int = 20, w: int = 30, device=None) -> torch.Tensor:  # noqa
-        """
-        Use your generative model to produce B new token images of size (B, h, w) and type (int/long).
-        """
-
-
-class AutoregressiveModel(torch.nn.Module, Autoregressive):
-    """
-    Implement an auto-regressive model.
-    The input is a set of patch tokens (integers), the output is an image of probability.
-    You need to implicitly shift your inputs by one position in the forward pass.
-    Make sure n_tokens matches your BSQ dimension (2**codebook_bits_).
-
-    Hint: You will need the torch.nn.Embedding function
-    Hint: You can use torch.nn.TransformerEncoderLayer if you'd like
-    Hint: You can complete this homework without using positional embeddings
-    """
-
-    def __init__(self, d_latent: int = 128, n_tokens: int = 2**10):
-        super().__init__()
-        self.n_tokens = n_tokens
-        self.d_latent = d_latent
-
-        self.token_emb = torch.nn.Embedding(n_tokens, d_latent)
-        self.pos_emb = None
-
-        encoder_layer = torch.nn.TransformerEncoderLayer(
-            d_model = d_latent,
-            nhead = 8,
-            dim_feedforward = 4* d_latent,
-            dropout=0,
-            batch_first=True,
-            activation="relu",
-            norm_first=True
-        )
-
-        self.encoder =  torch.nn.TransformerEncoder(encoder_layer, num_layers = 4)
-        self.head = torch.nn.Linear(d_latent, n_tokens)
-        # raise NotImplementedError()
-
-    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
-
-        B, h, w = x.shape
-        L = h * w
-        device = x.device
-        seq = x.view(B, L)
-        tok = self.token_emb(seq)
-        bos = self.bos.expand(B, 1, self.d_latent)
-        x_in = torch.cat([bos, tok[:, :-1, :]], dim = 1)
-
-        self._ensure_pos_emb(L, device)
-        pos_ids = torch.arange(L, device=device).unsqueeze(0)
-        x_in = x_in + self.pos_emb(pos_ids)
-        mask = self._casual_mask(L, device)
-        hiddens = self.encoder(x_in, mask = mask)
-        logits = self.head(hiddens).view( B, h, w, self.n_tokens)
-        return logits, {}
-
-        # raise NotImplementedError()
-
-    def generate(self, B: int = 1, h: int = 30, w: int = 20, device=None) -> torch.Tensor:  # noqa
-
-        L = h * w
-        d = self.d_latent
-
-        seq = torch.zeros(B, 0, dtype= torch.long, device=device)
-
-        for t in range(L):
-            if t ==0:
-                x_in = self.bos.expand(B, 1, d)
-            else:
-                tok = self.token_emb(seq)
-                x_in = torch.cat([self.bos.expand(B, 1, d), tok], dim = 1)
-
-            self._ensure_pos_emb(L, device)
-            pos = torch.arange(t + 1, device = device).unsqueeze(0)
-            x_in = x_in + self.pos_emb(pos)
-
-            mask = self._casual_mask(t + 1, device)
-            hiddens = self.encoder(x_in, mask = mask)
-            logits = self.heads(hiddens[:, -1, :])
             next_tok = torch.argmax(logits, dim = 1).squeeze(1)
             seq = torch.cat([seq, next_tok], dim =1)
 
