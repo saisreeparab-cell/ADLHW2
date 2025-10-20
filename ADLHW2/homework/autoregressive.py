@@ -82,7 +82,7 @@ class AutoregressiveModel(torch.nn.Module, Autoregressive):
         return torch.triu(torch.ones(seq_len, seq_len, device = device, dtype = torch.bool), diagonal = 1)
 
     def _ensure_pos_emb(self,seq_len: int, device):
-        if self.pos_emb is None or self.pos_emb.num_embeddingd < seq_len:
+        if self.pos_emb is None or self.pos_emb.num_embeddings < seq_len:
             self.pos_emb = torch.nn.Embedding(seq_len, self.d_latent).to(device)
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
